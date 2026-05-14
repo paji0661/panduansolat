@@ -1,7 +1,7 @@
 {
-  "name": "Panduan Solat Online",
-  "short_name": "Panduan Solat",
-  "description": "Panduan wirid, doa, dan solat jamak qasar (musafir) lengkap.",
+  "name": "Muslim Beginner",
+  "short_name": "Muslim Beginner",
+  "description": "Panduan wirid, doa, solat jamak qasar, dan tadabbur Al-Quran.",
   "start_url": "/panduansolat/",
   "id": "/panduansolat/",
   "display": "standalone",
