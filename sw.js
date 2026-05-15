@@ -5,11 +5,11 @@ self.addEventListener('install', (e) => {
   e.waitUntil(
     caches.open(CACHE_NAME).then((cache) => {
       return cache.addAll([
-        '/wiriddandoaselepassolat/',
-        '/wiriddandoaselepassolat/index.html',
-        '/wiriddandoaselepassolat/manifest.json',
-        '/wiriddandoaselepassolat/favicon-32x32.png',
-        '/wiriddandoaselepassolat/logo192.png'
+        '/muslimbeginner/',
+        '/muslimbeginner/index.html',
+        '/muslimbeginner/manifest.json',
+        '/muslimbeginner/favicon-32x32.png',
+        '/muslimbeginner/logo192.png'
       ]);
     })
   );
