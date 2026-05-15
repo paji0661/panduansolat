@@ -1,24 +1,25 @@
-const CACHE_NAME = 'wirid-doa-v2';
+const CACHE_NAME = 'muslim-beginner-v1';
+const BASE_PATH = '/muslimbeginner/';
+
+// Fail-fail asas yang wajib ada untuk app berfungsi
+const PRE_CACHE_RESOURCES = [
+  BASE_PATH,
+  BASE_PATH + 'index.html',
+  BASE_PATH + 'manifest.json',
+  BASE_PATH + 'favicon-32x32.png',
+  BASE_PATH + 'logo192.png'
+];
 
 self.addEventListener('install', (e) => {
-  // Pre-cache the main files for immediate offline access
   e.waitUntil(
     caches.open(CACHE_NAME).then((cache) => {
-      return cache.addAll([
-        '/muslimbeginner/',
-        '/muslimbeginner/index.html',
-        '/muslimbeginner/manifest.json',
-        '/muslimbeginner/favicon-32x32.png',
-        '/muslimbeginner/logo192.png'
-      ]);
+      return cache.addAll(PRE_CACHE_RESOURCES);
     })
   );
-  // Memaksa service worker baru bertugas serta-merta apabila di-update
   self.skipWaiting();
 });
 
 self.addEventListener('activate', (e) => {
-  // Menghapuskan versi cache yang lama jika ada kemas kini
   e.waitUntil(
     caches.keys().then((cacheNames) => {
       return Promise.all(
@@ -28,33 +29,39 @@ self.addEventListener('activate', (e) => {
           }
         })
       );
-    }).then(() => {
-      return self.clients.claim();
-    })
+    }).then(() => self.clients.claim())
   );
 });
 
 self.addEventListener('fetch', (e) => {
-  // Hanya proses GET requests
   if (e.request.method !== 'GET') return;
 
-  // STRATEGI: NETWORK FIRST, FALLBACK TO CACHE
-  // Cuba ambil versi terkini dari internet. Jika gagal (offline), guna versi dalam memori (cache).
+  // Jangan cache request ke API Tadabbur (sebab AI perlukan internet)
+  if (e.request.url.includes('/api/tadabbur')) {
+    return; 
+  }
+
   e.respondWith(
-    fetch(e.request)
-      .then((networkResponse) => {
-        // Jika internet ada dan berjaya, kita simpan versi terkini ke dalam cache secara diam-diam
-        if (networkResponse && networkResponse.status === 200 && networkResponse.type === 'basic') {
-          const responseClone = networkResponse.clone();
+    caches.match(e.request).then((cachedResponse) => {
+      if (cachedResponse) {
+        return cachedResponse;
+      }
+
+      return fetch(e.request).then((networkResponse) => {
+        // Simpan fail baru ke cache secara dinamik (termasuk JS/CSS assets)
+        if (networkResponse && networkResponse.status === 200) {
+          const responseToCache = networkResponse.clone();
           caches.open(CACHE_NAME).then((cache) => {
-            cache.put(e.request, responseClone);
+            cache.put(e.request, responseToCache);
           });
         }
         return networkResponse;
-      })
-      .catch(() => {
-        // Jika internet TIADA, ambil apa sahaja yang sudah tersimpan di cache
-        return caches.match(e.request);
-      })
+      }).catch(() => {
+        // Fallback jika offline dan fail tiada dalam cache
+        if (e.request.mode === 'navigate') {
+          return caches.match(BASE_PATH + 'index.html');
+        }
+      });
+    })
   );
 });
